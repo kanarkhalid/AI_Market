@@ -1,3 +1,6 @@
+# Large model files
+*.pt
+
 # Python
 __pycache__/
 *.py[cod]
