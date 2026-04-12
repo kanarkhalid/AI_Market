@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products — Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="layout-admin">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+                <div class="sidebar-logo">
+            <div class="brand-icon"><i class="fa-solid fa-cart-shopping" style="color:white;font-size:15px"></i></div>
+            <div class="sidebar-logo-text">
+                <h3>Smart Supermarket</h3>
+                <span>Admin Panel</span>
+            </div>
+        </div>
+                <nav class="sidebar-nav">
+            <div class="nav-section-label">Main</div>
+            <a href="./admin-dashboard.html" class="sidebar-link">
+                <i class="fa-solid fa-chart-line s-icon"></i> Dashboard
+            </a>
+            <a href="./admin-products.html" class="sidebar-link active">
+                <i class="fa-solid fa-box s-icon"></i> Products
+            </a>
+            <a href="./admin-orders.html" class="sidebar-link">
+                <i class="fa-solid fa-receipt s-icon"></i> Orders
+            </a>
+            <a href="./admin-releve.html" class="sidebar-link">
+                <i class="fa-solid fa-file-lines s-icon"></i> Statement
+            </a>
+            <a href="./admin-chatbot.html" class="sidebar-link">
+                <i class="fa-solid fa-robot s-icon"></i> AI Assistant
+            </a>
+            <a href="./admin-vision.html" class="sidebar-link">
+                <i class="fa-solid fa-camera s-icon"></i> Vision AI
+            </a>
+            <div class="nav-section-label">Store</div>
+            <a href="./products.html" class="sidebar-link">
+                <i class="fa-solid fa-store s-icon"></i> Storefront
+            </a>
+            <a href="../index.html" class="sidebar-link">
+                <i class="fa-solid fa-house s-icon"></i> Home
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar" id="admin-avatar">A</div>
+                <div class="user-info">
+                    <strong id="admin-name">Admin</strong>
+                    <small>Administrator</small>
+                </div>
+                <button class="btn-logout" onclick="doLogout()" title="Logout"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="admin-main">
+        <div class="flex-between mb-24">
+            <div class="page-header" style="margin-bottom:0">
+                <h1>Products</h1>
+                <p>Manage your product catalog</p>
+            </div>
+            <button class="btn btn-primary" onclick="openModal()">Add Product</button>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-24" style="padding:14px 18px">
+            <div class="flex gap-12" style="flex-wrap:wrap;align-items:center">
+                <input type="text" id="search" class="form-control" placeholder="🔍 Search..." style="max-width:240px" oninput="renderTable()">
+                <select id="cat-filter" class="form-control" style="max-width:180px" onchange="renderTable()">
+                    <option value="">All categories</option>
+                </select>
+                <select id="stock-filter" class="form-control" style="max-width:160px" onchange="renderTable()">
+                    <option value="">All stock levels</option>
+                    <option value="out">Out of stock</option>
+                    <option value="low">Low stock (≤5)</option>
+                    <option value="ok">In stock</option>
+                </select>
+                <span id="count" class="text-muted" style="margin-left:auto"></span>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card" style="padding:0">
+            <div class="table-wrap">
+                <table id="products-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">
+                            <span class="spinner"></span>
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title" id="modal-title">Add Product</span>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div id="modal-error"></div>
+        <div class="form-group">
+            <label class="form-label">Name *</label>
+            <input type="text" id="f-name" class="form-control" placeholder="Product name">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="form-group">
+                <label class="form-label">Category *</label>
+                <select id="f-category" class="form-control">
+                    <option value="">Select a category</option>
+                    <option value="Dairy">Dairy</option>
+                    <option value="Bakery">Bakery</option>
+                    <option value="Drinks">Drinks</option>
+                    <option value="Pantry">Pantry</option>
+                    <option value="Oils">Oils</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Price (MAD) *</label>
+                <input type="number" id="f-price" class="form-control" placeholder="0.00" min="0" step="0.01">
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="form-group">
+                <label class="form-label">Stock *</label>
+                <input type="number" id="f-stock" class="form-control" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Product Image</label>
+                <!-- Hidden URL field -->
+                <input type="hidden" id="f-image">
+
+                <!-- Upload zone -->
+                <div id="upload-zone"
+                    onclick="document.getElementById('f-image-file').click()"
+                    style="border:2px dashed var(--border2);border-radius:var(--radius);padding:16px;text-align:center;cursor:pointer;transition:border-color 0.2s;background:var(--bg)">
+                    <div id="upload-placeholder">
+                        <div style="font-size:28px;margin-bottom:6px">📷</div>
+                        <div style="font-size:13px;font-weight:600;color:var(--text-2)">Click to upload an image</div>
+                        <div style="font-size:11px;color:var(--muted);margin-top:3px">PNG, JPG, WEBP — Max 5MB</div>
+                    </div>
+                    <div id="upload-preview" style="display:none;position:relative">
+                        <img id="img-preview-el" src="" alt="Preview"
+                            style="width:90px;height:90px;object-fit:cover;border-radius:10px;border:1px solid var(--border);">
+                        <button onclick="clearImage(event)" title="Remove image"
+                            style="position:absolute;top:-8px;right:calc(50% - 53px);width:22px;height:22px;border-radius:50%;background:var(--red);color:white;border:none;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;">✕</button>
+                    </div>
+                </div>
+
+                <input type="file" id="f-image-file" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+
+                <!-- Upload progress -->
+                <div id="upload-progress" style="display:none;margin-top:8px">
+                    <div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden">
+                        <div id="upload-bar" style="height:100%;width:0%;background:var(--primary);transition:width 0.3s"></div>
+                    </div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:4px">Uploading...</div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="f-description" class="form-control" rows="2" placeholder="Short description..."></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Origin</label>
+            <input type="text" id="f-origin" class="form-control" placeholder="e.g. Morocco, France, Spain...">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" id="modal-save-btn" onclick="saveProduct()">Save Product</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script type="module">
+    import { getProducts, addProduct, updateProduct, deleteProduct, getCategories, requireAdmin } from '../js/api.js';
+    import { toast, formatPrice, stockBadge, categoryEmoji } from '../js/app.js';
+
+    const user = requireAdmin();
+    if (!user) throw new Error("Not admin");
+
+    document.getElementById("admin-name").textContent   = user.username;
+    document.getElementById("admin-avatar").textContent = user.username[0].toUpperCase();
+
+    window.doLogout = function() {
+        localStorage.removeItem("user");
+        window.location.href = "./login.html";
+    };
+
+    let allProducts = [];
+    let editingId   = null;
+
+    // ── Load ─────────────────────────────────────────────────────
+    async function load() {
+        allProducts = await getProducts();
+        const cats  = [...new Set(allProducts.map(p => p.category))].sort();
+
+        const catFilter = document.getElementById("cat-filter");
+        cats.forEach(c => {
+            const o = document.createElement("option");
+            o.value = c; o.textContent = c;
+            catFilter.appendChild(o);
+        });
+
+        renderTable();
+    }
+
+    window.renderTable = function() {
+        const search      = document.getElementById("search").value.toLowerCase();
+        const catFilter   = document.getElementById("cat-filter").value;
+        const stockFilter = document.getElementById("stock-filter").value;
+
+        let rows = allProducts;
+
+        if (search)     rows = rows.filter(p => p.name.toLowerCase().includes(search) || p.category.toLowerCase().includes(search));
+        if (catFilter)  rows = rows.filter(p => p.category === catFilter);
+        if (stockFilter === "out") rows = rows.filter(p => p.stock === 0);
+        else if (stockFilter === "low") rows = rows.filter(p => p.stock > 0 && p.stock <= 5);
+        else if (stockFilter === "ok")  rows = rows.filter(p => p.stock > 5);
+
+        document.getElementById("count").textContent = `${rows.length} product${rows.length !== 1 ? "s" : ""}`;
+
+        const tbody = document.getElementById("table-body");
+
+        if (!rows.length) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">No products found</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = rows.map(p => `
+            <tr>
+                <td style="color:var(--muted);font-family:var(--font-mono);font-size:13px">#${p.id}</td>
+                <td>
+                    <div style="display:flex;align-items:center;gap:10px">
+                        ${p.image_url
+                            ? `<img src="${p.image_url}" alt="${p.name}"
+                                style="width:42px;height:42px;object-fit:cover;border-radius:8px;border:1px solid var(--border);flex-shrink:0;"
+                                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                            : ''
+                        }
+                        <span style="font-size:22px;${p.image_url ? 'display:none' : ''}">${categoryEmoji(p.category)}</span>
+                        <div>
+                            <div style="font-weight:600">${p.name}</div>
+                            ${p.description ? `<div style="font-size:12px;color:var(--muted)">${p.description.slice(0,40)}${p.description.length > 40 ? '...' : ''}</div>` : ''}
+                        </div>
+                    </div>
+                </td>
+                <td><span class="badge badge-blue">${p.category}</span></td>
+                <td style="font-weight:700;color:var(--primary)">${formatPrice(p.price)}</td>
+                <td>${stockBadge(p.stock)}</td>
+                <td>
+                    <div class="flex gap-8">
+                        <button class="btn btn-outline btn-sm" onclick="openEdit(${p.id})">Edit</button>
+                        <button class="btn btn-sm" style="background:var(--red-bg);color:var(--red)" onclick="handleDelete(${p.id}, '${p.name.replace(/'/g,"\\'")}')">🗑</button>
+                    </div>
+                </td>
+            </tr>
+        `).join("");
+    };
+
+    // ── Modal ─────────────────────────────────────────────────────
+    window.openModal = function() {
+        editingId = null;
+        document.getElementById("modal-title").textContent = "Add Product";
+        document.getElementById("modal-save-btn").textContent = "Save Product";
+        ["f-name","f-category","f-price","f-stock","f-image","f-description","f-origin"].forEach(id => {
+            document.getElementById(id).value = "";
+        });
+        document.getElementById("modal-error").innerHTML = "";
+        document.getElementById("modal").classList.add("open");
+        document.getElementById("f-name").focus();
+    };
+
+    window.openEdit = function(id) {
+        const p = allProducts.find(x => x.id === id);
+        if (!p) return;
+        editingId = id;
+        document.getElementById("modal-title").textContent = "Edit Product";
+        document.getElementById("modal-save-btn").textContent = "Update Product";
+        document.getElementById("f-name").value        = p.name;
+        document.getElementById("f-category").value    = p.category || "";
+        document.getElementById("f-price").value       = p.price;
+        document.getElementById("f-stock").value       = p.stock;
+        document.getElementById("f-image").value       = p.image_url || "";
+        document.getElementById("f-description").value = p.description || "";
+        document.getElementById("f-origin").value       = p.origin || "";
+        document.getElementById("modal-error").innerHTML = "";
+        document.getElementById("modal").classList.add("open");
+    };
+
+    window.closeModal = function() {
+        document.getElementById("modal").classList.remove("open");
+    };
+
+    window.saveProduct = async function() {
+        const data = {
+            name:        document.getElementById("f-name").value.trim(),
+            category:    document.getElementById("f-category").value.trim(),
+            price:       parseFloat(document.getElementById("f-price").value),
+            stock:       parseInt(document.getElementById("f-stock").value),
+            image_url:   document.getElementById("f-image").value.trim(),
+            description: document.getElementById("f-description").value.trim(),
+            origin:      document.getElementById("f-origin").value.trim()
+        };
+
+        const errBox = document.getElementById("modal-error");
+        errBox.innerHTML = "";
+
+        if (!data.name || !data.category || isNaN(data.price) || isNaN(data.stock)) {
+            errBox.innerHTML = `<div class="alert alert-error">Please fill all required fields.</div>`;
+            return;
+        }
+
+        const btn = document.getElementById("modal-save-btn");
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner"></span> Saving...`;
+
+        const res = editingId
+            ? await updateProduct(editingId, data)
+            : await addProduct(data);
+
+        btn.disabled = false;
+        btn.textContent = editingId ? "Update Product" : "Save Product";
+
+        if (res.error) {
+            errBox.innerHTML = `<div class="alert alert-error">❌ ${res.error}</div>`;
+            return;
+        }
+
+        toast(editingId ? "Product updated ✓" : "Product added ✓", "success");
+        closeModal();
+        allProducts = await getProducts();
+        renderTable();
+    };
+
+    window.handleDelete = async function(id, name) {
+        if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+        const res = await deleteProduct(id);
+        if (res.error) { toast(res.error, "error"); return; }
+        toast(`"${name}" deleted`, "warning");
+        allProducts = await getProducts();
+        renderTable();
+    };
+
+    // Close modal on overlay click
+    document.getElementById("modal").addEventListener("click", e => {
+        if (e.target === document.getElementById("modal")) closeModal();
+    });
+
+    // ── Image upload handler ────────────────────────────────────
+    window.handleImageUpload = async function(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const progress = document.getElementById("upload-progress");
+        const bar      = document.getElementById("upload-bar");
+        progress.style.display = "block";
+
+        // Animate bar
+        let pct = 0;
+        const timer = setInterval(() => {
+            pct = Math.min(pct + 15, 85);
+            bar.style.width = pct + "%";
+        }, 100);
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+            const res  = await fetch("http://127.0.0.1:5000/api/products/upload-image", {
+                method: "POST",
+                body: formData
+            });
+            const data = await res.json();
+
+            clearInterval(timer);
+            bar.style.width = "100%";
+
+            if (data.error) {
+                toast(data.error, "error");
+                progress.style.display = "none";
+                return;
+            }
+
+            // Save URL in hidden input
+            document.getElementById("f-image").value = data.image_url;
+
+            // Show preview
+            showUploadPreview(data.image_url);
+            setTimeout(() => { progress.style.display = "none"; }, 500);
+            toast("Image uploaded successfully", "success");
+
+        } catch (err) {
+            clearInterval(timer);
+            progress.style.display = "none";
+            toast("Upload failed — is the backend running?", "error");
+        }
+    };
+
+    function showUploadPreview(url) {
+        document.getElementById("upload-placeholder").style.display = "none";
+        document.getElementById("upload-preview").style.display     = "block";
+        document.getElementById("img-preview-el").src = url;
+    }
+
+    function hideUploadPreview() {
+        document.getElementById("upload-placeholder").style.display = "block";
+        document.getElementById("upload-preview").style.display     = "none";
+        document.getElementById("img-preview-el").src = "";
+        document.getElementById("f-image").value = "";
+        document.getElementById("f-image-file").value = "";
+    }
+
+    window.clearImage = function(e) {
+        e.stopPropagation();
+        hideUploadPreview();
+    };
+
+    // Drag & drop support
+    const zone = document.getElementById("upload-zone");
+    zone.addEventListener("dragover", e => { e.preventDefault(); zone.style.borderColor = "var(--primary)"; });
+    zone.addEventListener("dragleave", ()  => { zone.style.borderColor = "var(--border2)"; });
+    zone.addEventListener("drop", e => {
+        e.preventDefault();
+        zone.style.borderColor = "var(--border2)";
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith("image/")) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            const input = document.getElementById("f-image-file");
+            input.files = dt.files;
+            handleImageUpload(input);
+        }
+    });
+
+    // Reset image zone when modal opens
+    const origOpenModal = window.openModal;
+    window.openModal = function() {
+        origOpenModal();
+        hideUploadPreview();
+    };
+
+    // Load existing image when editing
+    const origOpenEdit = window.openEdit;
+    window.openEdit = function(id) {
+        origOpenEdit(id);
+        const p = allProducts.find(x => x.id === id);
+        hideUploadPreview();
+        if (p && p.image_url) {
+            setTimeout(() => showUploadPreview(p.image_url), 50);
+        }
+    };
+
+    load();
+</script>
+</body>
+</html>

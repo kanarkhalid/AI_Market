@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+<div class="layout-admin">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+                <div class="sidebar-logo">
+            <div class="brand-icon"><i class="fa-solid fa-cart-shopping" style="color:white;font-size:15px"></i></div>
+            <div class="sidebar-logo-text">
+                <h3>Smart Supermarket</h3>
+                <span>Admin Panel</span>
+            </div>
+        </div>
+                <nav class="sidebar-nav">
+            <div class="nav-section-label">Main</div>
+            <a href="./admin-dashboard.html" class="sidebar-link active">
+                <i class="fa-solid fa-chart-line s-icon"></i> Dashboard
+            </a>
+            <a href="./admin-products.html" class="sidebar-link">
+                <i class="fa-solid fa-box s-icon"></i> Products
+            </a>
+            <a href="./admin-orders.html" class="sidebar-link">
+                <i class="fa-solid fa-receipt s-icon"></i> Orders
+            </a>
+            <a href="./admin-releve.html" class="sidebar-link">
+                <i class="fa-solid fa-file-lines s-icon"></i> Statement
+            </a>
+            <a href="./admin-chatbot.html" class="sidebar-link">
+                <i class="fa-solid fa-robot s-icon"></i> AI Assistant
+            </a>
+            <a href="./admin-vision.html" class="sidebar-link">
+                <i class="fa-solid fa-camera s-icon"></i> Vision AI
+            </a>
+            <div class="nav-section-label">Store</div>
+            <a href="./products.html" class="sidebar-link">
+                <i class="fa-solid fa-store s-icon"></i> Storefront
+            </a>
+            <a href="../index.html" class="sidebar-link">
+                <i class="fa-solid fa-house s-icon"></i> Home
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar" id="admin-avatar">A</div>
+                <div class="user-info">
+                    <strong id="admin-name">Admin</strong>
+                    <small>Administrator</small>
+                </div>
+                <button class="btn-logout" onclick="doLogout()" title="Logout"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="admin-main">
+        <div class="page-header">
+            <h1>Dashboard</h1>
+            <p id="date-label">Loading...</p>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fa-solid fa-box"></i></div>
+                <div class="stat-value" id="s-products">—</div>
+                <div class="stat-label">Total Products</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fa-solid fa-money-bill-wave"></i></div>
+                <div class="stat-value" id="s-revenue">—</div>
+                <div class="stat-label">Total Revenue (MAD)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange"><i class="fa-solid fa-bag-shopping"></i></div>
+                <div class="stat-value" id="s-orders">—</div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div class="stat-value" id="s-lowstock">—</div>
+                <div class="stat-label">Low Stock Alerts</div>
+            </div>
+        </div>
+
+        <!-- AI Box -->
+        <div class="card mb-24" style="border-left:4px solid var(--primary)">
+            <div class="flex gap-12" style="align-items:center;margin-bottom:14px">
+                <i class="fa-solid fa-microchip" style="font-size:22px;color:var(--primary)"></i>
+                <div>
+                    <div style="font-weight:700;font-size:15px">AI Stock Monitor</div>
+                    <div style="font-size:12px;color:var(--muted)">Detect low stock anomalies and get restocking recommendations</div>
+                </div>
+                <div style="display:flex;gap:8px;margin-left:auto">
+                    <button class="btn btn-primary btn-sm" onclick="runAI()">Run Detection</button>
+                    <button class="btn btn-outline btn-sm" id="btn-pdf-alerts" onclick="downloadAlertsPDF()" style="display:none">
+                        Download Report
+                    </button>
+                </div>
+            </div>
+            <div id="ai-result" style="padding:12px 16px;background:var(--bg);border-radius:var(--radius);font-size:14px;font-weight:500;color:var(--muted)">
+                Click "Run Detection" to analyze stock levels...
+            </div>
+            <div id="ai-alerts-list" style="margin-top:12px;display:none"></div>
+        </div>
+
+        <!-- Charts row -->
+        <div style="display:grid;grid-template-columns:1.8fr 1fr;gap:20px;margin-bottom:24px">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Revenue — Last 7 Days</span>
+                    <span class="badge badge-blue">Weekly</span>
+                </div>
+                <canvas id="chart-revenue" style="max-height:220px"></canvas>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Orders by Status</span>
+                    <span class="badge badge-green">Live</span>
+                </div>
+                <canvas id="chart-status" style="max-height:220px"></canvas>
+            </div>
+        </div>
+
+        <!-- Bottom row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+            <!-- Low stock -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Low Stock Alerts</span>
+                    <span class="badge badge-red" id="low-stock-badge">0</span>
+                </div>
+                <div id="low-stock-list">
+                    <div class="flex-center" style="padding:40px"><span class="spinner"></span></div>
+                </div>
+            </div>
+
+            <!-- Recent orders -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Recent Orders</span>
+                    <a href="./admin-orders.html" class="btn btn-outline btn-sm">View all</a>
+                </div>
+                <div id="recent-orders-list">
+                    <div class="flex-center" style="padding:40px"><span class="spinner"></span></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script type="module">
+    import { getStats, simulateAI, requireAdmin } from '../js/api.js';
+    import { toast, formatPrice } from '../js/app.js';
+
+    const user = requireAdmin();
+    if (!user) throw new Error("Not admin");
+
+    document.getElementById("admin-name").textContent   = user.username;
+    document.getElementById("admin-avatar").textContent = user.username[0].toUpperCase();
+    document.getElementById("date-label").textContent   =
+        new Date().toLocaleDateString("en-US", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+
+    window.doLogout = function() {
+        localStorage.removeItem("user");
+        window.location.href = "./login.html";
+    };
+
+    let chartRevenue = null;
+    let chartStatus  = null;
+
+    async function load() {
+        const data = await getStats();
+
+        // Stats
+        document.getElementById("s-products").textContent = data.total_products;
+        document.getElementById("s-revenue").textContent  = Number(data.total_revenue).toLocaleString();
+        document.getElementById("s-orders").textContent   = data.total_orders;
+        document.getElementById("s-lowstock").textContent = data.low_stock_count;
+
+        // Charts
+        drawRevenue(data.revenue_by_day);
+        drawStatus(data.status_counts);
+
+        // Low stock
+        renderLowStock(data.low_stock_products);
+
+        // Recent orders
+        renderRecentOrders(data.recent_orders);
+    }
+
+    function drawRevenue(byDay) {
+        if (chartRevenue) chartRevenue.destroy();
+        const labels = Object.keys(byDay);
+        const values = Object.values(byDay);
+        const ctx = document.getElementById("chart-revenue").getContext("2d");
+
+        const grad = ctx.createLinearGradient(0, 0, 0, 220);
+        grad.addColorStop(0, "rgba(37,99,235,0.18)");
+        grad.addColorStop(1, "rgba(37,99,235,0.00)");
+
+        chartRevenue = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels,
+                datasets: [{
+                    label: "Revenue (MAD)",
+                    data: values,
+                    borderColor: "#2563eb",
+                    backgroundColor: grad,
+                    borderWidth: 2.5,
+                    pointBackgroundColor: "#2563eb",
+                    pointRadius: 4,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: "#f0f0f0" }, ticks: { color: "#8891b8", font: { size: 12 } } },
+                    y: { beginAtZero: true, grid: { color: "#f0f0f0" }, ticks: { color: "#8891b8", font: { size: 12 } } }
+                }
+            }
+        });
+    }
+
+    function drawStatus(counts) {
+        if (chartStatus) chartStatus.destroy();
+        const labels = Object.keys(counts);
+        const values = Object.values(counts);
+        if (!labels.length) return;
+
+        const palette = {
+            pending:   "#ca8a04",
+            confirmed: "#2563eb",
+            shipped:   "#ea580c",
+            delivered: "#16a34a",
+            cancelled: "#dc2626"
+        };
+
+        chartStatus = new Chart(document.getElementById("chart-status").getContext("2d"), {
+            type: "doughnut",
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: labels.map(l => palette[l] || "#8891b8"),
+                    borderColor: "#fff",
+                    borderWidth: 3,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: "62%",
+                plugins: {
+                    legend: {
+                        position: "bottom",
+                        labels: { color: "#4a5180", font: { size: 12 }, padding: 14, usePointStyle: true }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderLowStock(products) {
+        const list  = document.getElementById("low-stock-list");
+        const badge = document.getElementById("low-stock-badge");
+        badge.textContent = `${products.length} alert${products.length !== 1 ? "s" : ""}`;
+
+        if (!products.length) {
+            list.innerHTML = `<div class="empty-state" style="padding:32px 0"><div class="empty-icon" style="font-size:32px">✅</div><p>All products well-stocked</p></div>`;
+            return;
+        }
+
+        list.innerHTML = products.map(p => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">
+                <div>
+                    <div style="font-weight:600;font-size:14px">${p.name}</div>
+                    <div style="font-size:12px;color:var(--muted)">${p.category}</div>
+                </div>
+                <span class="badge ${p.stock === 0 ? 'badge-red' : 'badge-orange'}">
+                    ${p.stock === 0 ? "Out of stock" : `${p.stock} left`}
+                </span>
+            </div>
+        `).join("");
+    }
+
+    function renderRecentOrders(orders) {
+        const list = document.getElementById("recent-orders-list");
+
+        if (!orders.length) {
+            list.innerHTML = `<div class="empty-state" style="padding:32px 0"><p>No orders yet</p></div>`;
+            return;
+        }
+
+        list.innerHTML = orders.map(o => `
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+                <div style="font-weight:700;font-size:13px;color:var(--primary);min-width:54px">#${o.id}</div>
+                <div style="flex:1">
+                    <div style="font-size:13px;font-weight:500">${o.items?.length || 0} item(s)</div>
+                    <div style="font-size:11px;color:var(--muted)">${o.date}</div>
+                </div>
+                <span class="badge status-${o.status}">${o.status}</span>
+                <div style="font-weight:700;color:var(--green);font-size:13px">${formatPrice(o.total)}</div>
+            </div>
+        `).join("");
+    }
+
+    let lastAlerts = [];
+
+    window.runAI = async function() {
+        const el        = document.getElementById("ai-result");
+        const alertList = document.getElementById("ai-alerts-list");
+        const pdfBtn    = document.getElementById("btn-pdf-alerts");
+
+        el.style.background = "var(--bg)";
+        el.style.color      = "var(--muted)";
+        el.textContent      = "Analyzing inventory...";
+        alertList.style.display = "none";
+        pdfBtn.style.display    = "none";
+
+        // Get real stock data
+        const statsRes = await fetch("http://127.0.0.1:5000/api/stats");
+        const stats    = await statsRes.json();
+
+        const outOfStock = stats.low_stock_products.filter(p => p.stock === 0);
+        const lowStock   = stats.low_stock_products.filter(p => p.stock > 0);
+
+        lastAlerts = stats.low_stock_products;
+
+        if (stats.low_stock_count === 0) {
+            el.style.background = "var(--green-bg)";
+            el.style.color      = "var(--green)";
+            el.textContent      = "All stock levels are healthy. No action required.";
+            return;
+        }
+
+        // Status message
+        el.style.background = "var(--red-bg)";
+        el.style.color      = "var(--red)";
+        el.textContent      = stats.low_stock_count + " alert(s) detected — immediate action required.";
+
+        // Alert list
+        alertList.style.display = "block";
+        alertList.innerHTML = `
+            <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+                <table style="width:100%;border-collapse:collapse;font-size:13px">
+                    <thead>
+                        <tr style="background:var(--bg)">
+                            <th style="padding:10px 14px;text-align:left;font-weight:700;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Product</th>
+                            <th style="padding:10px 14px;text-align:left;font-weight:700;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Category</th>
+                            <th style="padding:10px 14px;text-align:center;font-weight:700;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Stock</th>
+                            <th style="padding:10px 14px;text-align:center;font-weight:700;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Status</th>
+                            <th style="padding:10px 14px;text-align:left;font-weight:700;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Action Required</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${stats.low_stock_products.map(p => `
+                        <tr style="border-top:1px solid var(--border)">
+                            <td style="padding:11px 14px;font-weight:600;color:var(--text)">${p.name}</td>
+                            <td style="padding:11px 14px;color:var(--muted)">${p.category}</td>
+                            <td style="padding:11px 14px;text-align:center;font-weight:700;color:${p.stock === 0 ? 'var(--red)' : 'var(--orange)'}">${p.stock}</td>
+                            <td style="padding:11px 14px;text-align:center">
+                                <span class="badge ${p.stock === 0 ? 'badge-red' : 'badge-orange'}">
+                                    ${p.stock === 0 ? 'Out of Stock' : 'Low Stock'}
+                                </span>
+                            </td>
+                            <td style="padding:11px 14px;font-size:12px;color:var(--text-2)">
+                                ${p.stock === 0 ? 'Restock immediately' : 'Order within 24h'}
+                            </td>
+                        </tr>`).join("")}
+                    </tbody>
+                </table>
+            </div>`;
+
+        pdfBtn.style.display = "inline-flex";
+    };
+
+    window.downloadAlertsPDF = function() {
+        if (!lastAlerts.length) return;
+
+        const { jsPDF } = window.jspdf;
+        const doc    = new jsPDF({ unit: "mm", format: "a4" });
+        const pageW  = doc.internal.pageSize.getWidth();
+        const pageH  = doc.internal.pageSize.getHeight();
+        const margin = 14;
+        let y        = 0;
+
+        // Header
+        doc.setFillColor(37, 99, 235);
+        doc.rect(0, 0, pageW, 32, "F");
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.text("Smart Supermarket", margin, 13);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text("Stock Alert Report", margin, 21);
+        const dateStr = new Date().toLocaleDateString("en-GB", { day:"2-digit", month:"long", year:"numeric" })
+            + "  " + new Date().toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" });
+        doc.text(dateStr, pageW - margin, 21, { align: "right" });
+        y = 42;
+
+        doc.setTextColor(26, 31, 54);
+
+        // Summary box
+        const outCount = lastAlerts.filter(p => p.stock === 0).length;
+        const lowCount = lastAlerts.filter(p => p.stock > 0).length;
+
+        doc.setFillColor(239, 244, 255);
+        doc.setDrawColor(191, 207, 254);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(margin, y, pageW - margin * 2, 18, 3, 3, "FD");
+
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(220, 38, 38);
+        doc.text("Total Alerts: " + lastAlerts.length, margin + 6, y + 7);
+        doc.setTextColor(220, 38, 38);
+        doc.text("Out of Stock: " + outCount, margin + 60, y + 7);
+        doc.setTextColor(234, 88, 12);
+        doc.text("Low Stock: " + lowCount, margin + 110, y + 7);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(26, 31, 54);
+        y += 26;
+
+        // Table header
+        const cols = [
+            { label: "Product",          w: 55, align: "left" },
+            { label: "Category",         w: 30, align: "left" },
+            { label: "Stock",            w: 18, align: "center" },
+            { label: "Status",           w: 28, align: "center" },
+            { label: "Action Required",  w: 42, align: "left" },
+        ];
+
+        doc.setFillColor(245, 246, 250);
+        doc.setDrawColor(228, 231, 240);
+        doc.setLineWidth(0.2);
+        doc.rect(margin, y, pageW - margin * 2, 9, "FD");
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(140, 145, 184);
+
+        let x = margin + 3;
+        cols.forEach(col => {
+            if (col.align === "center") doc.text(col.label, x + col.w / 2, y + 6, { align: "center" });
+            else doc.text(col.label, x, y + 6);
+            x += col.w;
+        });
+        y += 9;
+
+        // Table rows
+        lastAlerts.forEach((p, ri) => {
+            if (y > pageH - 20) { doc.addPage(); y = 20; }
+            if (ri % 2 === 0) {
+                doc.setFillColor(250, 251, 255);
+                doc.rect(margin, y, pageW - margin * 2, 8, "F");
+            }
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+
+            const rowData = [
+                p.name,
+                p.category,
+                String(p.stock),
+                p.stock === 0 ? "Out of Stock" : "Low Stock",
+                p.stock === 0 ? "Restock immediately" : "Order within 24h"
+            ];
+
+            x = margin + 3;
+            cols.forEach((col, ci) => {
+                if (ci === 2) {
+                    doc.setTextColor(p.stock === 0 ? 220 : 234, p.stock === 0 ? 38 : 88, p.stock === 0 ? 38 : 12);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(rowData[ci], x + col.w / 2, y + 5.5, { align: "center" });
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(26, 31, 54);
+                } else if (ci === 3) {
+                    doc.setTextColor(p.stock === 0 ? 220 : 234, p.stock === 0 ? 38 : 88, p.stock === 0 ? 38 : 12);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(rowData[ci], x + col.w / 2, y + 5.5, { align: "center" });
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(26, 31, 54);
+                } else {
+                    doc.text(rowData[ci].slice(0, 30), x, y + 5.5);
+                }
+                x += col.w;
+            });
+
+            doc.setDrawColor(228, 231, 240);
+            doc.setLineWidth(0.1);
+            doc.line(margin, y + 8, pageW - margin, y + 8);
+            y += 8;
+        });
+
+        // Footer
+        doc.setFontSize(8);
+        doc.setTextColor(140, 145, 184);
+        doc.text(
+            "Smart Supermarket  |  Stock Alert Report  |  Generated: " + dateStr,
+            pageW / 2, pageH - 6, { align: "center" }
+        );
+
+        doc.save("stock_alert_report_" + new Date().toISOString().slice(0,10) + ".pdf");
+    };
+
+    load();
+</script>
+</body>
+</html>

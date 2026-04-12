@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+*.db
+
+# Instance folder
+instance/
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads (keep folder structure)
+Backend/static/uploads/*
+!Backend/static/uploads/.gitkeep
