@@ -21,7 +21,7 @@
 # Trained on  : Custom dataset (Google Colab)
 # Place at    : Backend/models_ai/empty_shelf.pt
 #
-# Download link:
+# Download link: https://drive.google.com/file/d/1ccBdgC8ONB4RjCTdurAq2lfYajOBij2m/view?usp=sharing
 
 
 ## MODEL 2 — Product Counter (if available)
